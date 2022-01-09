@@ -22,4 +22,6 @@ func Init(e *echo.Echo) {
 	todo := admin.Group("")
 	todo.GET("/todos", t.Index)
 	todo.POST("/todo", t.Insert)
+	todo.GET("/todo/completed", t.Completed)
+	todo.DELETE("/todo", t.Delete)
 }

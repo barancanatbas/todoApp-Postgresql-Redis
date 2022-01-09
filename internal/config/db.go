@@ -12,6 +12,7 @@ var Database *gorm.DB
 func Init() {
 	Database = connect()
 	migrate()
+	Pool = newPool()
 }
 
 func connect() *gorm.DB {
