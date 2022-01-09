@@ -16,17 +16,31 @@ func (rootRepo *Repositories) User() UserS {
 
 func (u UserS) Login(username string) (models.User, error) {
 	var user models.User
-	err := u.db.Where("user_name = ?", username).Find(&user).Error
+	err := u.db.
+		Where("user_name = ?", username).
+		Find(&user).Error
 	return user, err
 }
 
 func (u UserS) DuplicateUserName(username string) int64 {
 	var count int64
-	u.db.Model(&models.User{}).Where("user_name = ?", username).Count(&count)
+	u.db.Model(&models.User{}).
+		Where("user_name = ?", username).
+		Count(&count)
 	return count
 }
 
 func (u UserS) Insert(user *models.User) error {
 	err := u.db.Save(user).Error
 	return err
+}
+
+func (u UserS) GetId(username string) (models.User, error) {
+	var user models.User
+	err := u.db.Debug().Model(&models.User{}).
+		Where("user_name = ?", username).
+		Select("id,gmail").
+		First(&user).Error
+
+	return user, err
 }

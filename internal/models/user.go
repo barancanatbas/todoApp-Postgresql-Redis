@@ -8,4 +8,5 @@ type User struct {
 	Surname  string
 	Password string `json:"-"`
 	UserName string
+	Gmail    string
 }

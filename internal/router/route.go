@@ -14,7 +14,8 @@ func Init(e *echo.Echo) {
 	// route
 	e.POST("/login", user.Login)
 	e.POST("/register", user.Register)
-
+	e.POST("/forget/password", user.ForgetPassword)
+	//e.POST("/reset/password", user.ResetPassword)
 	admin := e.Group("")
 	admin.Use(middleware.JWTWithConfig(config.JWTConfig))
 	admin.Use(_middleware.Auth)

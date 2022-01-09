@@ -2,7 +2,9 @@ package user
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 	"todo/helpers"
 	"todo/internal/config"
@@ -76,3 +78,55 @@ func Register(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helpers.Response(user, "Kayıt başarılı"))
 }
+
+func ForgetPassword(c echo.Context) error {
+	var req request.Forget
+
+	if helpers.Validator(&c, &req) != nil {
+		return nil
+	}
+
+	// date
+	startDate := time.Now().Format("2006-01-02") + " 00:00:00"
+	endDate := time.Now().Format("2006-01-02") + " 23:59:59"
+
+	// check user
+	user, err := repository.Get().User().GetId(req.UserName)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.Response(nil, "Kullanıcı bulunamadı"))
+	}
+
+	// check count
+	count, err := repository.Get().ForgetPass().Count(startDate, endDate, user.ID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.Response(nil, "Bilinmeyen bir hata oluştu"))
+	}
+	if count > 3 {
+		return c.JSON(http.StatusBadRequest, helpers.Response(nil, "Günlük şifre sıfırlama hakkınız doldu"))
+	}
+
+	// generate code
+	min := 1000
+	max := 9999
+	code := rand.Intn(max-min) + min
+
+	// insert
+	forgetpass := models.ForgetPassword{
+		Userfk: user.ID,
+		Code:   strconv.Itoa(code),
+	}
+	err = repository.Get().ForgetPass().Insert(forgetpass)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.Response(err, "forget hatası"))
+	}
+	err = helpers.SendMail(user.Gmail, uint(code))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.Response(user, "Mail hatası var"))
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{"code": code})
+}
+
+// func ResetPassword(c echo.Context) error {
+
+// }

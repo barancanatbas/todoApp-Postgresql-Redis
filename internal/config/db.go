@@ -31,5 +31,6 @@ func migrate() {
 	Database.AutoMigrate(
 		&models.User{},
 		&models.Todo{},
+		&models.ForgetPassword{},
 	)
 }
